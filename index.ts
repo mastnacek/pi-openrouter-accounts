@@ -33,6 +33,7 @@ import type {
 	ExtensionContext,
 	ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
+import type { AutocompleteItem } from "@earendil-works/pi-tui";
 import type { Api, Model } from "@earendil-works/pi-ai";
 
 const ACCOUNT_PROVIDER_PREFIX = "openrouter-";
@@ -511,9 +512,17 @@ export default function (pi: ExtensionAPI): void {
 				help: "show the configuration reference",
 			};
 			const typed = (tokens[0] ?? "").toLowerCase();
-			const items = Object.entries(docs)
-				.filter(([key]) => key.startsWith(typed))
-				.map(([value, description]) => ({ value, label: value, description }));
+			const NON_TERMINAL = new Set(["edit", "key", "rename", "remove", "show"]);
+			const items: AutocompleteItem[] = [];
+			for (const [key, description] of Object.entries(docs)) {
+				if (key.toLowerCase().startsWith(typed)) {
+					items.push({
+						value: NON_TERMINAL.has(key) ? `${key} ` : key,
+						label: key,
+						description,
+					});
+				}
+			}
 			return items.length > 0 ? items : null;
 		},
 		handler: async (args: string, ctx) => {
