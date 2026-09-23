@@ -445,7 +445,15 @@ async function wizardAdd(
 /* ------------------------------------------------------------------ */
 
 export default function (pi: ExtensionAPI): void {
-	pi.on("session_start", (_event, ctx) => {
+	/** Unsubscribers from every `pi.on()`; drained on session_shutdown (AGENTS §5). */
+	const unsubscribers: Array<() => void> = [];
+
+	/** Retain a `pi.on()` return value; older engine typings declare it void. */
+	const track = (result: unknown): void => {
+		if (typeof result === "function") unsubscribers.push(result as () => void);
+	};
+
+	track(pi.on("session_start", (_event, ctx) => {
 		const result = scaffold(ctx.cwd);
 		const summary = registerAll(pi, ctx);
 		const accounts = loadConfig(result.path).accounts ?? [];
@@ -466,9 +474,10 @@ export default function (pi: ExtensionAPI): void {
 				summary.length > 0 ? summary.join(" · ") : "no accounts · /openrouter-accounts add",
 			);
 		}
-	});
+	}));
 
 	pi.on("session_shutdown", () => {
+		while (unsubscribers.length > 0) unsubscribers.pop()?.();
 		for (const providerId of registered) {
 			try {
 				pi.unregisterProvider(providerId);
