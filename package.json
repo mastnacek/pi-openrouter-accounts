@@ -2,16 +2,33 @@
   "name": "pi-openrouter-accounts",
   "version": "0.2.0",
   "description": "Run several OpenRouter accounts side by side in Pi as separate providers (openrouter-work, openrouter-personal, ...) so the account is visible in the model picker and each subagent can target a specific account.",
-  "keywords": ["pi-package", "pi-extension", "openrouter", "accounts", "multi-account"],
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "openrouter",
+    "accounts",
+    "multi-account"
+  ],
   "license": "MIT",
   "type": "module",
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*",
-    "typebox": "*"
+    "typebox": "*",
+    "@earendil-works/pi-agent-core": "*"
+  },
+  "files": [
+    "index.ts",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
   }
 }
