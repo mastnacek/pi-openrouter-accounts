@@ -25,10 +25,11 @@
   },
   "files": [
     "index.ts",
+    "src",
     "README.md",
     "package.json"
   ],
   "scripts": {
-    "test": "node --test test/**/*.test.js"
+    "test": "npx tsx --test test/**/*.test.js"
   }
 }
