@@ -22,11 +22,21 @@
  *   defaults <- ~/.pi/agent/openrouter-accounts.json <- <cwd>/.pi/openrouter-accounts.json
  * `--global` writes the global layer; without it the project layer is written.
  * `PI_OPENROUTER_ACCOUNTS` overrides the whole cascade.
+ *
+ * Startup model: `defaultProvider` may name one of OUR alias providers
+ * (`openrouter-<id>`), which the engine only knows once registerProvider has
+ * run. `session_start` fires AFTER the engine resolved the startup model, so
+ * a fresh session can land on the engine's vendored fallback
+ * (openrouter -> moonshotai/kimi-k2.6) instead of the configured default.
+ * The reapply in session_start fixes that: when the configured default is an
+ * alias model with auth, and the active model is not one of ours, swap to
+ * the default via pi.setModel (session-only; never rewrites settings).
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerAll, unregisterAll } from "./src/accounts.js";
 import { runCommand } from "./src/command.js";
+import { reapplyDefaultModel } from "./src/default-model.js";
 import { getCompletions } from "./src/completions.js";
 import { loadConfig } from "./src/io.js";
 import { scaffold } from "./src/wizard.js";
@@ -44,10 +54,13 @@ export default function (pi: ExtensionAPI): void {
 	let sessionCwd = process.cwd();
 
 	track(
-		pi.on("session_start", (_event, ctx) => {
+		pi.on("session_start", (event, ctx) => {
 			sessionCwd = ctx.cwd;
 			const result = scaffold(ctx.cwd);
 			const summary = registerAll(pi, ctx);
+			// Belt-and-braces: swap a core-fallback startup model to the
+			// configured alias default (must run AFTER registerAll above).
+			void reapplyDefaultModel(pi, event, ctx).catch(() => {});
 			const accounts = loadConfig(ctx.cwd).accounts ?? [];
 			if (ctx.hasUI) {
 				if (result.created) {

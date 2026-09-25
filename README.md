@@ -101,6 +101,12 @@ If `apiKey` is omitted and no stored credential exists, the fallback is `$OPENRO
 - Renaming an account changes its provider id, so sessions and agents pinned to the old id need updating.
 - API keys pasted through the wizard are typed in a plain (visible) input; prefer the env-var or `!command` source if that matters.
 
+## Startup default (fallback fix)
+
+If your `settings.json` default is an alias model (`defaultProvider: "openrouter-<id>"`), a fresh session can start on the engine's vendored fallback (`openrouter -> moonshotai/kimi-k2.6`): `session_start` fires *after* the engine resolved the startup model, so the alias may not be registered yet at resolution time.
+
+The plugin self-heals that: on `session_start` (reasons `startup` / `new`), when the configured default is an alias model with usable auth and the active model is not one of our aliases (i.e. a core fallback), it swaps to the default via `pi.setModel` — session-only, it never rewrites your settings. Deliberate picks (CLI `--model`, scoped models, an active model on another alias) are never clobbered, and `resume`/`fork` restore the session's own model.
+
 ## Related packages
 
 | Package | What it does | Fits this use case? |

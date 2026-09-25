@@ -1,6 +1,6 @@
 {
   "name": "pi-openrouter-accounts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Run several OpenRouter accounts side by side in Pi as separate providers (openrouter-work, openrouter-personal, ...) so the account is visible in the model picker and each subagent can target a specific account.",
   "keywords": [
     "pi-package",
